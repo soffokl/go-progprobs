@@ -41,19 +41,22 @@ func (s *stat) JSON() (out []byte, err error) {
 	return json.Marshal(s)
 }
 
+type Image struct {
+}
+
 // Image returns a black image/png that's of the specified width and height
-func Image(w http.ResponseWriter, r *http.Request) {
+func (i *Image) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	args := strings.Split(strings.TrimPrefix(r.RequestURI, "/generate/"), "/")
 	if len(args) == 3 {
-		height, _ := strconv.Atoi(args[1])
-		width, _ := strconv.Atoi(args[2])
+		width, _ := strconv.Atoi(args[1])
+		height, _ := strconv.Atoi(args[2])
 
-		if height <= 0 || width <= 0 {
+		if height <= 0 || width <= 0 || height*width > 100000000 {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		img := image.NewRGBA(image.Rect(0, 0, height, width))
+		img := image.NewRGBA(image.Rect(0, 0, width, height))
 		draw.Draw(img, img.Bounds(), &image.Uniform{color.RGBA{0, 0, 0, 255}}, image.ZP, draw.Src)
 
 		switch args[0] {
